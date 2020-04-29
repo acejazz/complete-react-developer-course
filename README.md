@@ -56,8 +56,19 @@ module.exports = (env) => {
                     test: /\.s?css$/,
                     use: CSSExtract.extract({
                         use: [
-                            'css-loader',
-                            'sass-loader'
+                            {
+                                loader: 'css-loader',
+                                options: {
+                                    sourceMap: true
+                                }
+                            },
+                            {
+                                loader: 'sass-loader',
+                                options: {
+                                    sourceMap: true
+                                }
+                            }
+                            
                         ]
                     })
                 }
@@ -66,9 +77,11 @@ module.exports = (env) => {
         plugins: [
             CSSExtract
         ],
+        devtool: isProduction ? 'source-map' : 'inline-source-map',
         // ...
     };
 };
+
 ```
 The `plugins` array is where the plugins are setup to access and work with the existing WebPack build.
 If now we run `yarn run build:prod` we will see that it's creating the4 different files:
@@ -86,3 +99,5 @@ That CSS file must be included in our HTML:
     <link rel="stylesheet" type="text/css" href="/styles.css" />
 </head>
 ```
+
+If now we run `yarn run serve` we will see that the page is actually loading that CSS.
