@@ -1,103 +1,25 @@
-# 134. Creating separate CSS files
+# 136. Deploying with Heroku
 
-As of now, all the CSS files live inside `bundle.js` and therefore it's bigger than it should be:
-```javascript
-// app.js
-import 'normalize.css/normalize.css';
-import './styles/styles.scss';
-import 'react-dates/lib/css/_datepicker.css';
-// ...
+Before using Heroku, we have to log into it:
+```shell
+heroku login
 ```
-We can tell WebPack to separate the CSS files from the JavaScript.
 
-We will use the `extract-text-webpack-plugin` WebPack plugin.
-From the documentation we have:
+After this, we have to create our app:
+```shell
+heroku create react-developer-course
+```
+This command creates also a git origin, as we can see if we run `git remote -v`.
+
+With the current setup, Heroku cannot know how to start up the app.
+Heroku will automatically call the `start` script which we have to implement in `package.json`:
 ```javascript
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: "style-loader",
-          use: "css-loader"
-        })
-      }
-    ]
-  },
-  plugins: [
-    new ExtractTextPlugin("styles.css"),
-  ]
+"scripts": {
+    "serve": "live-server public/",
+    "build:dev": "webpack",
+    "build:prod": "webpack -p --env production",
+    "dev-server": "webpack-dev-server",
+    "test": "jest --config=jest.config.json",
+    "start": "node server/server.js"
 }
 ```
-
-To install the plugin:
-```shell
-yarn add extract-text-webpack-plugin@3.0.0
-```
-
-This plugin will be used in the WebPack configuration:
-```javascript
-const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-module.exports = (env) => {
-    const isProduction = env === 'production';
-    const CSSExtract = new ExtractTextPlugin('styles.css');
-
-    return {
-        // ...
-        module: {
-            rules: [
-                // ...
-                {
-                    test: /\.s?css$/,
-                    use: CSSExtract.extract({
-                        use: [
-                            {
-                                loader: 'css-loader',
-                                options: {
-                                    sourceMap: true
-                                }
-                            },
-                            {
-                                loader: 'sass-loader',
-                                options: {
-                                    sourceMap: true
-                                }
-                            }
-                            
-                        ]
-                    })
-                }
-            ]
-        },
-        plugins: [
-            CSSExtract
-        ],
-        devtool: isProduction ? 'source-map' : 'inline-source-map',
-        // ...
-    };
-};
-
-```
-The `plugins` array is where the plugins are setup to access and work with the existing WebPack build.
-If now we run `yarn run build:prod` we will see that it's creating the4 different files:
-```
-bundle.js       839 kB          0  [emitted]  [big]  main
-styles.css      17.4 kB         0  [emitted]         main
-bundle.js.map   4.77 MB         0  [emitted]         main
-styles.css.map  87 bytes        0  [emitted]         main
-```
-
-That CSS file must be included in our HTML:
-```html
-<head>
-    <!-- ... -->
-    <link rel="stylesheet" type="text/css" href="/styles.css" />
-</head>
-```
-
-If now we run `yarn run serve` we will see that the page is actually loading that CSS.
