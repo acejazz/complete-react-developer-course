@@ -10,7 +10,8 @@
     "build:prod": "webpack -p --env production",
     "dev-server": "webpack-dev-server",
     "test": "jest --config=jest.config.json",
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "heroku-postbuild": "yarn run build:prod"
   },
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -18,7 +19,7 @@
     "@babel/preset-react": "^7.0.0",
     "babel": "^6.23.0",
     "babel-cli": "6.24.1",
-    "babel-core": "7.0.0-0",
+    "babel-core": "7.0.0-alpha.1",
     "babel-loader": "^8.0.6",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-preset-env": "1.5.2",
@@ -52,6 +53,6 @@
     "webpack-dev-server": "2.5.1"
   },
   "resolutions": {
-    "babel-core": "7.0.0-bridge.0"
+    "babel-core": "7.0.0-alpha.1"
   }
 }
