@@ -43,6 +43,14 @@ public/bundle.js.map
 public/styles.css
 public/styles.css.map
 ```
+We instruct Heroku to create the bundle using the `heroku-postbuild` script:
+```javascript
+// package.json
+{
+    "heroku-postbuild": "yarn run build:prod"
+}
+```
+Such script is run after Heroku installs all the dependencies.
 
 Then we can push our changes on Heroku:
 ```shell
