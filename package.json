@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Tanio Messina",
   "license": "MIT",
+  "engines": {
+    "node": "11.10.x"
+  },
   "scripts": {
     "serve": "live-server public/",
     "build:dev": "webpack",
