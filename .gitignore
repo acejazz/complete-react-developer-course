@@ -1,7 +1,4 @@
-node_modules
+node_modules/
 .DS_Store
 .vscode/
-public/bundle.js
-public/bundle.js.map
-public/styles.css
-public/styles.css.map
+public/dist/
