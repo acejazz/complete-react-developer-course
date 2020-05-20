@@ -1,96 +1,20 @@
-# 140. Build it: Adding summary component
+# 156. Heroky Environment variables
 
-We need to props for the `ExpensesSummary` Component:
-- expense count (how many visible expenses)
-- expenses total (what is the total of the visible expenses)
-For example:
+To use environment variables in production we have to pass them via CLI to Heroku, which store them in `process.env` (`NODE_ENV` is automatically set up).
+
+With `heroku config` we can see all the set environment variables.
+To set an environment variable we do:
+```shell
+heroku config:set KEY=value
 ```
-Viewing 2 expenses totalling $84.34
-```
-We will therefore need two props for the Component.
-
-The new Component will be rendered inside the `ExpenseDashboardPage` Component.
-We can use a stateless functional Component, because there is no state to manage.
-
-We can implement the Component like this:
-```javascript
-import React from 'react';
-import { connect } from 'react-redux';
-import numeral from 'numeral';
-
-export const ExpensesSummary = ({expensesCount, expensesTotal}) => {
-    const expenseWord = expensesCount === 1 ? 'expense' : 'expenses';
-    const formattedExpensesTotal = numeral(expensesTotal / 100).format('$0,0.00');
-    return (
-        <div>
-            <h1>Viewing {expensesCount} {expenseWord} totalling {formattedExpensesTotal}</h1>
-        </div>
-    );
-};
-```
-This Component can be tested with a snapshot test:
-```javascript
-import React from 'react';
-import { shallow } from 'enzyme';
-import { ExpensesSummary} from '../../components/ExpensesSummary';
-
-test('should correctly render ExpensesSummary with 1 expense', () => {
-    const wrapper = shallow(<ExpensesSummary expensesCount={1} expensesTotal={235}/>);
-
-    expect(wrapper).toMatchSnapshot();
-});
-
-test('should correctly render ExpensesSummary with multiple expense', () => {
-    const wrapper = shallow(<ExpensesSummary expensesCount={23} expensesTotal={23423442}/>);
-
-    expect(wrapper).toMatchSnapshot();
-});
+To unset an environment variable we do:
+```shell
+heroku config:unset KEY
 ```
 
-We will make the Component connected so that it will read the data directly from the Redux Store:
-```javascript
-import React from 'react';
-import { connect } from 'react-redux';
-import numeral from 'numeral';
-import selectExpenses from '../selectors/expenses';
-import selectExpensesTotal from '../selectors/expenses-total';
-
-export const ExpensesSummary = ({expensesCount, expensesTotal}) => {
-    const expenseWord = expensesCount === 1 ? 'expense' : 'expenses';
-    const formattedExpensesTotal = numeral(expensesTotal / 100).format('$0,0.00');
-    return (
-        <div>
-            <h1>Viewing {expensesCount} {expenseWord} totalling {formattedExpensesTotal}</h1>
-        </div>
-    );
-};
-
-const mapStateToProps = (state) => {
-    const visibleExpenses = selectExpenses(state.expenses, state.filters);
-
-    return {
-        expensesCount: visibleExpenses.length,
-        expensesTotal: selectExpensesTotal(visibleExpenses)
-    };
-};
-
-export default connect(mapStateToProps)(ExpensesSummary);
+We can set all the environment variables we need with a unique command:
+```shell
+heroku config:set FIREBASE_API_KEY=AIzaSyB7ddeHOysiL2lYB3i7VAnSTQpFb8opKPo FIREBASE_AUTH_DOMAIN=expensify-d2806.firebaseapp.com FIREBASE_DATABASE_URL=https://expensify-d2806.firebaseio.com FIREBASE_PROJECT_ID=expensify-d2806 FIREBASE_STORAGE_BUCKET=expensify-d2806.appspot.com FIREBASE_MESSAGING_SENDER_ID=460313095218 FIREBASE_APP_ID=1:460313095218:web:08ca464334e397193f602b FIREBASE_MEASUREMENT_ID=G-G2HDRT8E48
 ```
 
-The Component will be included in `ExpenseDashboardPage`:
-```javascript
-import React from 'react';
-import ExpenseList from './ExpenseList';
-import ExpenseListFilters from './ExpenseListFilters';
-import ExpensesSummary from './ExpensesSummary';
-
-const ExpenseDashboardPage = () => (
-    <div>
-        <ExpensesSummary />
-        <ExpenseListFilters />
-        <ExpenseList />
-    </div>
-);
-
-export default ExpenseDashboardPage;
-```
+We must add `.env.test` and `.env.development` to the `.gitignore` file because we don't want to push them to Heroku or save them in the repo.
