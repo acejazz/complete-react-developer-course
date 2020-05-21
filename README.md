@@ -1,20 +1,93 @@
-# 156. Heroky Environment variables
+# 157. Fetching Expenses: Part II
 
-To use environment variables in production we have to pass them via CLI to Heroku, which store them in `process.env` (`NODE_ENV` is automatically set up).
+We have to setup an asynchronous function like we did with the action for adding the expenses, so we have to:
+- return a function
+- use firebase
+- call the `dispatch` method
+- call the synchronous action creator.
 
-With `heroku config` we can see all the set environment variables.
-To set an environment variable we do:
-```shell
-heroku config:set KEY=value
+So it would be similar to:
+```javascript
+export const addExpense = (expense) => ({
+    type: 'ADD_EXPENSE',
+    expense
+});
+
+export const startAddExpense = (expenseData = {}) => {
+    return (dispatch) => {
+        const {
+            description = '', 
+            note = '', 
+            amount = 0, 
+            createdAt = 0
+        } = expenseData;
+
+        const expense = {
+            description, note, amount, createdAt
+        }
+
+        return database.ref('expenses').push(expense)
+        .then((ref) => {
+            dispatch(addExpense({
+                id: ref.key,
+                ...expense
+            }))
+        });
+    }
+}
 ```
-To unset an environment variable we do:
-```shell
-heroku config:unset KEY
+
+So, for setting the expenses we will have:
+```javascript
+// SET_EXPENSES
+export const setExpenses = (expenses) => ({
+    type: 'SET_EXPENSES',
+    expenses
+});
+
+// export const startSetExpenses;
+// 1. Fetch all expense data
+// 2. Parse that data into an array
+// 3. Dispatch SET_EXPENSES
+export const startSetExpenses = () => {
+    return (dispatch) => {
+        // It must be returned otherwise we won't be able to use then
+        return database.ref('expenses').once('value')
+            .then((snapshot) => {
+                const expenses = [];
+                snapshot.forEach((childSnapshot) => {
+                    expenses.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                dispatch(setExpenses(expenses));});
+    };
+};
 ```
 
-We can set all the environment variables we need with a unique command:
-```shell
-heroku config:set FIREBASE_API_KEY=AIzaSyB7ddeHOysiL2lYB3i7VAnSTQpFb8opKPo FIREBASE_AUTH_DOMAIN=expensify-d2806.firebaseapp.com FIREBASE_DATABASE_URL=https://expensify-d2806.firebaseio.com FIREBASE_PROJECT_ID=expensify-d2806 FIREBASE_STORAGE_BUCKET=expensify-d2806.appspot.com FIREBASE_MESSAGING_SENDER_ID=460313095218 FIREBASE_APP_ID=1:460313095218:web:08ca464334e397193f602b FIREBASE_MEASUREMENT_ID=G-G2HDRT8E48
+This function is used on the bootstrap of the application, so it will be called in `app.js`:
+```javascript
+ReactDOM.render(<p>Loading...</p>, document.getElementById('app'));
+
+store.dispatch(startSetExpenses())
+.then(() => { // then possible because we return the promise in the startSetExpenses method
+    ReactDOM.render(jsx, document.getElementById('app'));
+})
 ```
 
-We must add `.env.test` and `.env.development` to the `.gitignore` file because we don't want to push them to Heroku or save them in the repo.
+A test for the asynchronous action would be:
+```javascript
+test('should fetch the expenses from firebase', (done) => {
+    const store = createMockStore({});
+
+    store.dispatch(startSetExpenses()).then(() => {
+        const actions = store.getActions();
+        expect(actions[0]).toEqual({
+            type: 'SET_EXPENSES',
+            expenses
+        });
+        done();
+    });
+});
+```
