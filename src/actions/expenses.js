@@ -29,10 +29,19 @@ export const startAddExpense = (expenseData = {}) => {
     }
 }
 
-export const removeExpense = ({id} = {}) => ({
+export const removeExpense = ({ id } = {}) => ({
     type: 'REMOVE_EXPENSE',
     id
 });
+
+export const startRemoveExpense = ({ id } = {}) => {
+    return (dispatch) => {
+        return database.ref(`expenses/${id}`).remove()
+            .then(() => {
+                dispatch(removeExpense({ id }))
+            });
+    };
+};
 
 export const editExpense = (id, updates) => ({
     type: 'EDIT_EXPENSE',
@@ -40,16 +49,20 @@ export const editExpense = (id, updates) => ({
     updates
 });
 
-// SET_EXPENSES
+export const startEditExpense = (id, updates) => {
+    return (dispatch) => {
+        return database.ref(`expenses/${id}`).update(updates)
+            .then(() => {
+                dispatch(editExpense(id, updates));
+            });
+    };
+};
+
 export const setExpenses = (expenses) => ({
     type: 'SET_EXPENSES',
     expenses
 });
 
-// export const startSetExpenses;
-// 1. Fetch all expense data
-// 2. Parse that data into an array
-// 3. Dispatch SET_EXPENSES
 export const startSetExpenses = () => {
     return (dispatch) => {
         return database.ref('expenses').once('value')
