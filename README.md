@@ -55,3 +55,20 @@ First we have to change the rules, to lock the database:
   }
 }
 ```
+Then we can define the database is read and written only by logged in user, that is, users with a User ID:
+```javascript
+{
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+      "users": {
+        "$user_id": {
+    		".read": "$user_id === auth.uid",
+      		".write": "$user_id === auth.uid"
+    	}
+    }
+  }
+}
+```
+`$user_id` is a placeholder for the User ID that is populated after the login.
